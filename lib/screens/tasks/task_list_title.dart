@@ -148,7 +148,7 @@ class _TaskListTileState extends State<TaskListTile> {
                         //   height: 20,
                         //   width: 20,
                         // )
-                        : Icon(Icons.restore_from_trash)
+                        : Icon(Icons.refresh_outlined)
                     // SvgPicture.asset(
                     //   'assets/icons/fromtrash.svg',
                     //   color: Colors.black54,
