@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:ultimate_task_by_studio/misc/constants.dart';
+import 'package:ultimate_task_by_studio/misc/custom_icon_icons.dart';
 import 'package:ultimate_task_by_studio/misc/errors.dart';
 import 'package:ultimate_task_by_studio/screens/signin/email_signing_page.dart';
 import 'package:ultimate_task_by_studio/screens/signin/sign_in_manager.dart';
@@ -228,7 +229,10 @@ class SignInPage extends StatelessWidget {
           elevation: 4,
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)))),
-      icon: Icon(Icons.ac_unit),
+      icon: Icon(
+        Icons.mail,
+        color: Colors.black87,
+      ),
       // Container(
       //   child: Stack(
       //     alignment: Alignment.center,
@@ -266,26 +270,18 @@ class SignInPage extends StatelessWidget {
           elevation: 4,
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)))),
-      icon: Icon(Icons.add_a_photo),
-      // Container(
-      //   child: Stack(
-      //     alignment: Alignment.center,
-      //     children: [
-      //       SvgPicture.asset(
-      //         'assets/icons/oval.svg',
-      //         color: Colors.red,
-      //         height: 25,
-      //         width: 25,
-      //       ),
-      //       SvgPicture.asset(
-      //         'assets/icons/google.svg',
-      //         height: 14,
-      //         width: 14,
-      //         color: Colors.white,
-      //       ),
-      //     ],
-      //   ),
-      // ),
+      icon: Container(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              CustomIcon.google,
+              color: Colors.red,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
       label: Text(
         "Google",
         style: GoogleFonts.alice(
