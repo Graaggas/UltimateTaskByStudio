@@ -268,7 +268,7 @@ class _TasksPageState extends State<TasksPage> {
             }
           });
 
-//TODO undoneTasks. If doingDate текущего элемента в списке меньше, чем сегодня => doingDate = сегодня
+
           undoneTasks.forEach((element) {
             if (element.doingDate.isBefore(DateTime.now())) {
               element.doingDate = DateTime.now();
