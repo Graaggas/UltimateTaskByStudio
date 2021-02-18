@@ -261,7 +261,7 @@ class _TasksPageState extends State<TasksPage> {
 
           tasks.forEach((element) {
             if (element.isDeleted == false) {
-              print("/task_page/ current task's doingDate = ${convertFromDateTimeToString(element.doingDate)}");
+
               undoneTasks.add(element);
             } else {
               doneTasks.add(element);
