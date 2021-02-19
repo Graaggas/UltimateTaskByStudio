@@ -89,6 +89,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      locale: const Locale("ru", "RU"),
     );
     if (picked != null && picked != selectedDate)
       setState(() {

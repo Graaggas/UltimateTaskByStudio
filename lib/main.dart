@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:ultimate_task_by_studio/landing_page.dart';
 import 'package:ultimate_task_by_studio/screens/tasks/color_bloc.dart';
@@ -23,6 +24,12 @@ class MyApp extends StatelessWidget {
         Provider<ColorCircleBloc>.value(value: ColorCircleBloc()),
       ],
       child: MaterialApp(
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate
+        ],
+        supportedLocales: [
+          const Locale('ru'),
+        ],
         debugShowCheckedModeBanner: false,
         title: 'Ultimate Task',
         home: LandingPage(),

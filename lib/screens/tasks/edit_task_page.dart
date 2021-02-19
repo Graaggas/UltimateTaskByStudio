@@ -130,6 +130,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
   selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
       context: context,
+      locale: const Locale("ru", "RU"),
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
