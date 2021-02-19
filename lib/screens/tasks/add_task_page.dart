@@ -196,6 +196,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   TextFormField _buildTextFieldForMemo() {
     return TextFormField(
+      style: GoogleFonts.alice(
+        textStyle: TextStyle(color: Colors.black, fontSize: 18),
+      ),
       keyboardType: TextInputType.multiline,
       validator: (value) => value.isNotEmpty ? null : 'Введите текст задачи...',
       maxLines: null,

@@ -312,6 +312,9 @@ class _EditTaskPageState extends State<EditTaskPage> {
 
   TextFormField _buildTextFieldForMemo() {
     return TextFormField(
+      style: GoogleFonts.alice(
+        textStyle: TextStyle(color: Colors.black, fontSize: 18),
+      ),
       controller: _textController,
       keyboardType: TextInputType.multiline,
       validator: (value) => value.isNotEmpty ? null : 'Введите текст задачи...',
