@@ -349,9 +349,11 @@ class _TasksPageState extends State<TasksPage> {
           switch (isSwitched) {
             case true:
               if (doneTasks.isNotEmpty) {
-                // final children = getChildrenToday(doneTasks);
+
                 isAnythingForDone = true;
-                // return ListView(children: children);
+                 return ListView.builder(itemCount: doneTasks.length, itemBuilder: (context, i){
+                   return dismissibleTask(doneTasks, i, context);
+                 });
               } else {
                 isAnythingForDone = false;
               }
@@ -366,39 +368,7 @@ class _TasksPageState extends State<TasksPage> {
                   itemCount: undoneTasks.length,
                   itemBuilder: (context, i) {
                     // return Card(child: Text(undoneTasks[i].memo),);
-                    return Dismissible(
-                      background: Container(
-                        color: Color(myBackgroundColor),
-                        child: Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      key: Key('task-${undoneTasks[i].id}'),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (direction) => _delete(
-                          context, undoneTasks[i], isSwitched ? true : false),
-                      child: Padding(
-                        padding: const EdgeInsets.all(3.0),
-                        child: TaskListTile(
-                          context: context,
-                          task: undoneTasks[i],
-                          onTap: () =>
-                              EditTaskPage.show(context, task: undoneTasks[i]),
-                        ),
-                      ),
-                    );
+                    return dismissibleTask(undoneTasks, i, context);
                   },
                   separatorBuilder: (context, i) {
                     if (indexTomorrow == i + 1) {
@@ -433,6 +403,42 @@ class _TasksPageState extends State<TasksPage> {
         return Center(child: CircularProgressIndicator());
       },
     );
+  }
+
+  Dismissible dismissibleTask(List<Task> tasks, int i, BuildContext context) {
+    return Dismissible(
+                   background: Container(
+                     color: Color(myBackgroundColor),
+                     child: Padding(
+                       padding: const EdgeInsets.all(15),
+                       child: Row(
+                         mainAxisAlignment: MainAxisAlignment.end,
+                         children: <Widget>[
+                           Icon(
+                             Icons.delete,
+                             color: Colors.red,
+                           ),
+                           SizedBox(
+                             width: 10,
+                           ),
+                         ],
+                       ),
+                     ),
+                   ),
+                   key: Key('task-${tasks[i].id}'),
+                   direction: DismissDirection.endToStart,
+                   onDismissed: (direction) => _delete(
+                       context, tasks[i], isSwitched ? true : false),
+                   child: Padding(
+                     padding: const EdgeInsets.all(3.0),
+                     child: TaskListTile(
+                       context: context,
+                       task: tasks[i],
+                       onTap: () =>
+                           EditTaskPage.show(context, task: tasks[i]),
+                     ),
+                   ),
+                 );
   }
 
   Row dateSeparator(String text) {
