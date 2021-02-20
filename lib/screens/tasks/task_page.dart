@@ -268,6 +268,9 @@ class _TasksPageState extends State<TasksPage> {
           final List<Task> doneTasks = [];
           final List<Task> undoneTasks = [];
 
+          //сортировка списка
+          tasks.sort((a,b) => a.doingDate.compareTo(b.doingDate));
+
           tasks.forEach((element) {
             if (element.isDeleted == false) {
               undoneTasks.add(element);
@@ -276,8 +279,8 @@ class _TasksPageState extends State<TasksPage> {
             }
           });
 
-          undoneTasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
-          doneTasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
+          // undoneTasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
+          // doneTasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
 
           var now = DateTime.now();
           var tomorrow = now.add(new Duration(days: 1));
