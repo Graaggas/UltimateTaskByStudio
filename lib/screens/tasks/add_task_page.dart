@@ -70,7 +70,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       print("/add_task_page/ doingDate = ${ convertFromDateTimeToString(task.doingDate)}");
       //! await убираем
       widget.database.createTask(task);
-      showMessage(context, "Задача создана");
+
       Navigator.of(context).pop();
     }
   }

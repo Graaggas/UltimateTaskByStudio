@@ -11,7 +11,7 @@ void showMessage(BuildContext context, String message) {
       duration: const Duration(seconds: 2),
       builder: (context, controller) {
         return Flash(
-          backgroundColor: Color(myBlueLightColor),
+          backgroundColor: Colors.red[300],
           brightness: Brightness.light,
           barrierBlur: 3.0,
           barrierColor: Colors.black38,

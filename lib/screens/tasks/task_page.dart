@@ -32,8 +32,8 @@ Future<void> _delete(
     BuildContext context, Task task, bool isFinalDeleting) async {
   try {
     final database = Provider.of<Database>(context, listen: false);
-    showMessage(
-        context, isFinalDeleting ? "Задача завершена" : "Задача удалена");
+    // showMessage(
+    //     context, isFinalDeleting ? "Задача завершена" : "Задача удалена");
 
     //! await убираем
     database.deleteTask(task);
@@ -84,7 +84,9 @@ class _TasksPageState extends State<TasksPage> {
         DialogButton(
           child: Text(
             "Отмена",
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: GoogleFonts.alice(
+              textStyle: TextStyle(color: Colors.white, fontSize: 22),
+            ),
           ),
           onPressed: () => Navigator.pop(context),
           width: 120,
@@ -93,7 +95,9 @@ class _TasksPageState extends State<TasksPage> {
           color: Colors.red,
           child: Text(
             "Выход",
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: GoogleFonts.alice(
+              textStyle: TextStyle(color: Colors.white, fontSize: 22),
+            ),
           ),
           onPressed: () {
             _signOut(context);
@@ -125,7 +129,7 @@ class _TasksPageState extends State<TasksPage> {
             Text(
               isSwitched ? "Завершенные" : "Текущие задачи",
               style: GoogleFonts.alice(
-                textStyle: TextStyle(color: Colors.black87, fontSize: 18),
+                textStyle: TextStyle(color: Colors.black87, fontSize: 22),
               ),
             ),
           ],
@@ -171,7 +175,10 @@ class _TasksPageState extends State<TasksPage> {
                       DialogButton(
                         child: Text(
                           "Отмена",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
+                          style: GoogleFonts.alice(
+                            textStyle:
+                                TextStyle(color: Colors.white, fontSize: 22),
+                          ),
                         ),
                         onPressed: () => Navigator.pop(context),
                         width: 120,
@@ -180,13 +187,16 @@ class _TasksPageState extends State<TasksPage> {
                         color: Colors.red,
                         child: Text(
                           "Удалить",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
+                          style: GoogleFonts.alice(
+                            textStyle:
+                                TextStyle(color: Colors.white, fontSize: 22),
+                          ),
                         ),
                         onPressed: () {
                           final database =
                               Provider.of<Database>(context, listen: false);
                           database.deleteAllDone();
-                          showMessage(context, "Завершенные задачи удалены");
+                          // showMessage(context, "Завершенные задачи удалены");
                           Navigator.of(context).pop(true);
                         },
                         width: 120,
@@ -255,21 +265,24 @@ class _TasksPageState extends State<TasksPage> {
 
   Widget _buildContexts(BuildContext context) {
     final database = Provider.of<Database>(context, listen: false);
-    var indexTomorrow = 0;
-    bool flagTommorow = false;
-    bool flagFuture = false;
-    var indexFuture = 0;
+
 
     return StreamBuilder<List<Task>>(
       stream: database.tasksStream(),
       builder: (context, snapshot) {
         final tasks = snapshot.data;
+
+        var indexTomorrow = 0;
+        bool flagTommorow = false;
+        bool flagFuture = false;
+        var indexFuture = 0;
+
         if (snapshot.hasData) {
           final List<Task> doneTasks = [];
           final List<Task> undoneTasks = [];
 
           //сортировка списка
-          tasks.sort((a,b) => a.doingDate.compareTo(b.doingDate));
+          tasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
 
           tasks.forEach((element) {
             if (element.isDeleted == false) {
@@ -344,16 +357,16 @@ class _TasksPageState extends State<TasksPage> {
               print("\n");
             }
           }
-          ;
 
           switch (isSwitched) {
             case true:
               if (doneTasks.isNotEmpty) {
-
                 isAnythingForDone = true;
-                 return ListView.builder(itemCount: doneTasks.length, itemBuilder: (context, i){
-                   return dismissibleTask(doneTasks, i, context);
-                 });
+                return ListView.builder(
+                    itemCount: doneTasks.length,
+                    itemBuilder: (context, i) {
+                      return dismissibleTask(doneTasks, i, context);
+                    });
               } else {
                 isAnythingForDone = false;
               }
@@ -395,7 +408,6 @@ class _TasksPageState extends State<TasksPage> {
                   title: 'Завершенные задачи',
                   message: '',
                 );
-
         }
         if (snapshot.hasError) {
           return Center(child: Text('ERROR'));
@@ -406,61 +418,95 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Dismissible dismissibleTask(List<Task> tasks, int i, BuildContext context) {
+    var database = Provider.of<Database>(context, listen: false);
     return Dismissible(
-                   background: Container(
-                     color: Color(myBackgroundColor),
-                     child: Padding(
-                       padding: const EdgeInsets.all(15),
-                       child: Row(
-                         mainAxisAlignment: MainAxisAlignment.end,
-                         children: <Widget>[
-                           Icon(
-                             Icons.delete,
-                             color: Colors.red,
-                           ),
-                           SizedBox(
-                             width: 10,
-                           ),
-                         ],
-                       ),
-                     ),
-                   ),
-                   key: Key('task-${tasks[i].id}'),
-                   direction: DismissDirection.endToStart,
-                   onDismissed: (direction) => _delete(
-                       context, tasks[i], isSwitched ? true : false),
-                   child: Padding(
-                     padding: const EdgeInsets.all(3.0),
-                     child: TaskListTile(
-                       context: context,
-                       task: tasks[i],
-                       onTap: () =>
-                           EditTaskPage.show(context, task: tasks[i]),
-                     ),
-                   ),
-                 );
+      background: Container(
+        color: Color(myBackgroundColor),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Icon(
+                Icons.delete,
+                color: Colors.red,
+              ),
+              SizedBox(
+                width: 10,
+              ),
+            ],
+          ),
+        ),
+      ),
+      key: Key('task-${tasks[i].id}'),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        Task deletingTask = Task(
+          color: tasks[i].color,
+          creationDate: DateTime.now(),
+          doingDate: tasks[i].doingDate,
+          id: tasks[i].id,
+          isDeleted: tasks[i].isDeleted,
+          lastEditDate: tasks[i].lastEditDate,
+          memo: tasks[i].memo,
+          outOfDate: tasks[i].outOfDate,
+        );
+        Scaffold.of(context).hideCurrentSnackBar();
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text("Задача удалена"),
+          duration: Duration(seconds: 1),
+          action: SnackBarAction(
+            label: "Отмена",
+            onPressed: () {
+              database.createTask(deletingTask);
+            },
+          ),
+        ));
+
+        _delete(context, tasks[i], isSwitched ? true : false);
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: TaskListTile(
+          context: context,
+          task: tasks[i],
+          onTap: () => EditTaskPage.show(context, task: tasks[i]),
+        ),
+      ),
+    );
   }
 
-  Row dateSeparator(String text) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Expanded(
-          child: Divider(
-            thickness: 2,
-            indent: 12,
-            endIndent: 12,
+  Padding dateSeparator(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: Divider(
+              thickness: 2,
+              indent: 12,
+              endIndent: 12,
+            ),
           ),
-        ),
-        Text(text),
-        Expanded(
-          child: Divider(
-            thickness: 2,
-            indent: 12,
-            endIndent: 12,
+          Text(
+            text,
+            style: GoogleFonts.alice(
+              textStyle: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-      ],
+          Expanded(
+            child: Divider(
+              thickness: 2,
+              indent: 12,
+              endIndent: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
