@@ -454,7 +454,7 @@ class _TasksPageState extends State<TasksPage> {
         Scaffold.of(context).hideCurrentSnackBar();
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text("Задача удалена"),
-          duration: Duration(seconds: 1),
+          duration: Duration(seconds: 2),
           action: SnackBarAction(
             label: "Отмена",
             onPressed: () {

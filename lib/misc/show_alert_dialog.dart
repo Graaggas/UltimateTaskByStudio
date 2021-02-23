@@ -34,10 +34,13 @@ Future<bool> showAlertDialog(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              child: Text(
-                content,
-                style: GoogleFonts.alice(
-                  textStyle: TextStyle(color: Colors.black, fontSize: 18),
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: Text(
+                  content,
+                  style: GoogleFonts.alice(
+                    textStyle: TextStyle(color: Colors.black, fontSize: 18),
+                  ),
                 ),
               ),
             ),
