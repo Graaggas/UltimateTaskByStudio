@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:ultimate_task_by_studio/models/task.dart';
 import 'package:ultimate_task_by_studio/service/APIpath.dart';
@@ -6,10 +5,16 @@ import 'package:ultimate_task_by_studio/service/firestore_service.dart';
 
 abstract class Database {
   Future<void> deleteTask(Task task);
+
   Future<void> createTask(Task task);
+
   Stream<List<Task>> tasksStream();
+
   Future<void> setTask(Task task);
+
   Future<void> deleteAllDone();
+
+  Future<int> getTasksLength();
 }
 
 class FirestoreDatabase implements Database {
@@ -37,14 +42,27 @@ class FirestoreDatabase implements Database {
 
   @override
   Stream<List<Task>> tasksStream() => _service.collectionStream(
-    path: APIpath.tasks(uid),
-    builder: (data) {
-      return Task.fromMap(data);
-    },
-  );
+        path: APIpath.tasks(uid),
+        builder: (data) {
+          return Task.fromMap(data);
+        },
+      );
+
   @override
   Future<void> setTask(Task task) => _service.setData(
-    path: APIpath.task(uid, task.id),
-    data: task.toMap(),
-  );
+        path: APIpath.task(uid, task.id),
+        data: task.toMap(),
+      );
+
+  @override
+  Future<int> getTasksLength() async {
+    int amount = 0;
+    print("database - before, amount = $amount");
+    var res = await _service.getTasksLength(path: APIpath.tasks(uid)).then((value) {
+      amount = value;
+      print("database - then, amount = $amount");
+    });
+    print("database - past, amount = $amount");
+    return amount;
+  }
 }

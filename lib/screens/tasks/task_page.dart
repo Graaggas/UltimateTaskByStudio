@@ -43,6 +43,10 @@ Future<void> _delete(
 }
 
 class TasksPage extends StatefulWidget {
+
+
+
+
   @override
   _TasksPageState createState() => _TasksPageState();
 }
@@ -51,9 +55,17 @@ class _TasksPageState extends State<TasksPage> {
   bool isSwitched = false;
   bool isAnythingForDone = false;
 
+  int amount = 0;
+
   List<Task> tasksToday = [];
   List<Task> tasksTomorrow = [];
   List tasksFuture = [];
+
+  callbackChangeAmount(){
+    setState(() {
+
+    });
+  }
 
   Future<void> _signOut(BuildContext context) async {
     try {
@@ -112,6 +124,7 @@ class _TasksPageState extends State<TasksPage> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthBase>(context, listen: false);
+    final database = Provider.of<Database>(context, listen: false);
 
     return Scaffold(
       backgroundColor: Color(myBackgroundColor),
@@ -126,12 +139,29 @@ class _TasksPageState extends State<TasksPage> {
                 textStyle: TextStyle(color: Colors.black, fontSize: 22),
               ),
             ),
-            Text(
-              isSwitched ? "Завершенные" : "Текущие задачи",
-              style: GoogleFonts.alice(
-                textStyle: TextStyle(color: Colors.black87, fontSize: 22),
-              ),
+            FutureBuilder<int>(
+              future: database.getTasksLength(),
+              builder: (context, snapshot) {
+              amount = snapshot.data;
+              if(!snapshot.hasData){
+                amount = 0;
+              }
+                return Text(
+                  isSwitched
+                      ? "Завершенные"
+                      : "Текущие задачи (${amount})",
+                  style: GoogleFonts.alice(
+                    textStyle: TextStyle(color: Colors.black87, fontSize: 22),
+                  ),
+                );
+              },
             ),
+            // Text(
+            //   isSwitched ? "Завершенные" : "Текущие задачи (1)",
+            //   style: GoogleFonts.alice(
+            //     textStyle: TextStyle(color: Colors.black87, fontSize: 22),
+            //   ),
+            // ),
           ],
         ),
         centerTitle: true,
@@ -220,7 +250,7 @@ class _TasksPageState extends State<TasksPage> {
                 color: Colors.black,
               ),
             ),
-      body: _buildContexts(context),
+      body: _buildContexts(context, database),
     );
   }
 
@@ -263,10 +293,7 @@ class _TasksPageState extends State<TasksPage> {
   //   return children;
   // }
 
-  Widget _buildContexts(BuildContext context) {
-    final database = Provider.of<Database>(context, listen: false);
-
-
+  Widget _buildContexts(BuildContext context, Database database) {
     return StreamBuilder<List<Task>>(
       stream: database.tasksStream(),
       builder: (context, snapshot) {
@@ -468,6 +495,7 @@ class _TasksPageState extends State<TasksPage> {
       child: Padding(
         padding: const EdgeInsets.all(3.0),
         child: TaskListTile(
+          callback: callbackChangeAmount,
           context: context,
           task: tasks[i],
           onTap: () => EditTaskPage.show(context, task: tasks[i]),

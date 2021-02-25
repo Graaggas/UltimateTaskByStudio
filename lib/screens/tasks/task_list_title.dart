@@ -21,8 +21,9 @@ class TaskListTile extends StatefulWidget {
   final Task task;
   final VoidCallback onTap;
   final BuildContext context;
+  final Function callback;
 
-  TaskListTile({Key key, this.task, this.onTap, this.context})
+  TaskListTile({Key key, this.task, this.onTap, this.context, this.callback})
       : super(key: key);
 
   @override
@@ -136,9 +137,12 @@ class _TaskListTileState extends State<TaskListTile> {
                   width: 30,
                 ),
                 InkWell(
-                    onTap: () => !widget.task.isDeleted
-                        ? _taskFlagDeleted(widget.task.id, true)
-                        : _taskFlagDeleted(widget.task.id, false),
+                    onTap: () {
+                      widget.callback();
+                      !widget.task.isDeleted
+                          ? _taskFlagDeleted(widget.task.id, true)
+                          : _taskFlagDeleted(widget.task.id, false);
+                    },
                     // onTap: () => print("tapped"),
                     child: !widget.task.isDeleted
                         ? Icon(Icons.done)
