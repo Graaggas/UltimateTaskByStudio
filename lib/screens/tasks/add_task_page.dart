@@ -10,15 +10,17 @@ import 'package:ultimate_task_by_studio/service/database.dart';
 
 class AddTaskPage extends StatefulWidget {
   final Database database;
+  final Function callbackChangeAmount;
 
-  const AddTaskPage({Key key, this.database}) : super(key: key);
+  AddTaskPage({Key key, this.database, this.callbackChangeAmount}) : super(key: key);
 
   //* контекст берется из taskPage, потому как show запускается именно оттуда.
-  static Future<void> show(BuildContext context) async {
+  static Future<void> show(BuildContext context, Function callbackChangeAmount) async {
     final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddTaskPage(
+          callbackChangeAmount: callbackChangeAmount,
           database: database,
         ),
         fullscreenDialog: true,
@@ -69,9 +71,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
       );
       print("/add_task_page/ doingDate = ${ convertFromDateTimeToString(task.doingDate)}");
       //! await убираем
+      widget.callbackChangeAmount();
       widget.database.createTask(task);
+      Navigator.of(context).pop(true);
 
-      Navigator.of(context).pop();
+
     }
   }
 

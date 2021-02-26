@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:ultimate_task_by_studio/misc/constants.dart';
 import 'package:ultimate_task_by_studio/misc/converts.dart';
+import 'package:ultimate_task_by_studio/misc/show_alert_dialog.dart';
 import 'package:ultimate_task_by_studio/misc/show_exception_dialog.dart';
 import 'package:ultimate_task_by_studio/misc/show_message.dart';
 import 'package:ultimate_task_by_studio/models/task.dart';
@@ -37,21 +38,22 @@ Future<void> _delete(
 
     //! await убираем
     database.deleteTask(task);
+
+
   } on FirebaseException catch (e) {
     showExceptionAlertDialog(context, title: "Operation failed", exception: e);
   }
 }
 
 class TasksPage extends StatefulWidget {
-
-
-
-
   @override
   _TasksPageState createState() => _TasksPageState();
 }
 
 class _TasksPageState extends State<TasksPage> {
+
+
+
   bool isSwitched = false;
   bool isAnythingForDone = false;
 
@@ -61,9 +63,13 @@ class _TasksPageState extends State<TasksPage> {
   List<Task> tasksTomorrow = [];
   List tasksFuture = [];
 
-  callbackChangeAmount(){
+  /*ф-ия для обновления этого виджета из виджета TaskListTile*/
+  callbackChangeAmountMinus() {
+    setState(() {});
+  }
+  callbackChangeAmountPlus(){
     setState(() {
-
+      amount++;
     });
   }
 
@@ -77,16 +83,6 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Future<void> _confirmSignOut(BuildContext context, String user) async {
-    // final didRequestSignOut = await showAlertDialog(
-    //   context,
-    //   title: 'Logout',
-    //   content: 'Выйти из учетной записи "$user"?',
-    //   cancelActionText: 'Отмена',
-    //   defaultActionText: 'Выход',
-    // );
-    // if (didRequestSignOut == true) {
-    //   _signOut(context);
-    // }
     Alert(
       context: context,
       type: AlertType.warning,
@@ -142,26 +138,18 @@ class _TasksPageState extends State<TasksPage> {
             FutureBuilder<int>(
               future: database.getTasksLength(),
               builder: (context, snapshot) {
-              amount = snapshot.data;
-              if(!snapshot.hasData){
-                amount = 0;
-              }
+                amount = snapshot.data;
+                if (!snapshot.hasData) {
+                  amount = 0;
+                }
                 return Text(
-                  isSwitched
-                      ? "Завершенные"
-                      : "Текущие задачи (${amount})",
+                  isSwitched ? "Завершенные" : "Текущие задачи (${amount})",
                   style: GoogleFonts.alice(
                     textStyle: TextStyle(color: Colors.black87, fontSize: 22),
                   ),
                 );
               },
             ),
-            // Text(
-            //   isSwitched ? "Завершенные" : "Текущие задачи (1)",
-            //   style: GoogleFonts.alice(
-            //     textStyle: TextStyle(color: Colors.black87, fontSize: 22),
-            //   ),
-            // ),
           ],
         ),
         centerTitle: true,
@@ -191,7 +179,7 @@ class _TasksPageState extends State<TasksPage> {
           ? FloatingActionButton(
               backgroundColor: Color(myBlackLightColor),
               child: Icon(Icons.add),
-              onPressed: () => AddTaskPage.show(context),
+              onPressed: () => AddTaskPage.show(context, callbackChangeAmountMinus),
             )
           : FloatingActionButton(
               onPressed: () async {
@@ -234,15 +222,6 @@ class _TasksPageState extends State<TasksPage> {
                     ],
                   ).show();
                 }
-                // final finalDeleting = await showAlertDialog(context,
-                //     title: "Удаление задач",
-                //     content: "Удалить все задачи?",
-                //     defaultActionText: "Удалить",
-                //     cancelActionText: "Отмена");
-
-                // if (finalDeleting == true) {
-                //
-                // }
               },
               backgroundColor: Color(myRedColor),
               child: Icon(
@@ -254,50 +233,15 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 
-  // List<Dismissible> getChildren(List tasks) {
-  //   final children = tasks
-  //       .map((task) => Dismissible(
-  //             background: Container(
-  //               color: Color(myBackgroundColor),
-  //               child: Padding(
-  //                 padding: const EdgeInsets.all(15),
-  //                 child: Row(
-  //                   mainAxisAlignment: MainAxisAlignment.end,
-  //                   children: <Widget>[
-  //                     Icon(
-  //                       Icons.delete,
-  //                       color: Colors.red,
-  //                     ),
-  //                     SizedBox(
-  //                       width: 10,
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //             key: Key('task-${task.id}'),
-  //             direction: DismissDirection.endToStart,
-  //             onDismissed: (direction) =>
-  //                 _delete(context, task, isSwitched ? true : false),
-  //             child: Padding(
-  //               padding: const EdgeInsets.all(3.0),
-  //               child: TaskListTile(
-  //                 context: context,
-  //                 task: task,
-  //                 onTap: () => EditTaskPage.show(context, task: task),
-  //               ),
-  //             ),
-  //           ))
-  //       .toList();
-  //
-  //   return children;
-  // }
 
   Widget _buildContexts(BuildContext context, Database database) {
+
+
     return StreamBuilder<List<Task>>(
       stream: database.tasksStream(),
       builder: (context, snapshot) {
         final tasks = snapshot.data;
+
 
         var indexTomorrow = 0;
         bool flagTommorow = false;
@@ -318,9 +262,6 @@ class _TasksPageState extends State<TasksPage> {
               doneTasks.add(element);
             }
           });
-
-          // undoneTasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
-          // doneTasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
 
           var now = DateTime.now();
           var tomorrow = now.add(new Duration(days: 1));
@@ -361,9 +302,6 @@ class _TasksPageState extends State<TasksPage> {
               continue;
             }
 
-            // diff = element.doingDate.difference(now);
-            // print("~ now diff is ${diff.inDays}");
-
             if (element.doingDate.isBefore(tomorrow)) {
               print(
                   "\x1B[36m /today/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
@@ -400,10 +338,6 @@ class _TasksPageState extends State<TasksPage> {
               break;
             case false:
               if (undoneTasks.isNotEmpty) {
-                // final childrenToday = getChildren(tasksToday);
-                // final childrenTomorrow = getChildren(tasksTomorrow);
-                // final childrenFuture = getChildren(tasksFuture);
-
                 return ListView.separated(
                   itemCount: undoneTasks.length,
                   itemBuilder: (context, i) {
@@ -465,37 +399,101 @@ class _TasksPageState extends State<TasksPage> {
           ),
         ),
       ),
-      key: Key('task-${tasks[i].id}'),
+      // key: Key('task-${tasks[i].id}'),
+      key: UniqueKey(),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (DismissDirection direction) async {
+        return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(
+                  "Внимание!",
+                  style: GoogleFonts.alice(
+                    color: Colors.red,
+                    fontSize: 22,
+                  ),
+                ),
+                content: Text(
+                  "Удалить задачу?",
+                  style: GoogleFonts.alice(
+                    color: Colors.black,
+                    fontSize: 22,
+                  ),
+                ),
+                actions: <Widget>[
+                  Material(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                    elevation: 4.0,
+                    color: Colors.red,
+                    clipBehavior: Clip.antiAlias,
+                    // Add This
+                    child: MaterialButton(
+                        child: Text("Отмена",
+                            style: GoogleFonts.alice(
+                              color: Colors.white,
+                              fontSize: 22,
+                            )),
+                        onPressed: () =>
+                            Navigator.of(context).pop<bool>(false)),
+                  ),
+                  Material(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                    elevation: 4.0,
+                    color: Colors.blue,
+                    clipBehavior: Clip.antiAlias,
+                    // Add This
+                    child: MaterialButton(
+                        child: Text("Удалить",
+                            style: GoogleFonts.alice(
+                              color: Colors.white,
+                              fontSize: 22,
+                            )),
+                        onPressed: () {
+                          //callbackChangeAmount();
+                          Navigator.of(context).pop<bool>(true);
+                        }),
+                  ),
+                ],
+              );
+            });
+      },
       onDismissed: (direction) {
-        Task deletingTask = Task(
-          color: tasks[i].color,
-          creationDate: DateTime.now(),
-          doingDate: tasks[i].doingDate,
-          id: tasks[i].id,
-          isDeleted: tasks[i].isDeleted,
-          lastEditDate: tasks[i].lastEditDate,
-          memo: tasks[i].memo,
-          outOfDate: tasks[i].outOfDate,
-        );
-        Scaffold.of(context).hideCurrentSnackBar();
-        Scaffold.of(context).showSnackBar(SnackBar(
-          content: Text("Задача удалена"),
-          duration: Duration(seconds: 2),
-          action: SnackBarAction(
-            label: "Отмена",
-            onPressed: () {
-              database.createTask(deletingTask);
-            },
-          ),
-        ));
+        // callbackChangeAmount();
+      //TODO если добавить строку выше, то все работает, но страница обновляется дважды и элемент прыгает на своем месте.
+
+        // Task deletingTask = Task(
+        //   color: tasks[i].color,
+        //   creationDate: DateTime.now(),
+        //   doingDate: tasks[i].doingDate,
+        //   id: tasks[i].id,
+        //   isDeleted: tasks[i].isDeleted,
+        //   lastEditDate: tasks[i].lastEditDate,
+        //   memo: tasks[i].memo,
+        //   outOfDate: tasks[i].outOfDate,
+        // );
+        // Scaffold.of(context).hideCurrentSnackBar();
+        // Scaffold.of(context).showSnackBar(SnackBar(
+        //   content: Text("Задача удалена"),
+        //   duration: Duration(seconds: 2),
+        //   action: SnackBarAction(
+        //     label: "Отмена",
+        //     onPressed: () {
+        //       database.createTask(deletingTask);
+        //
+        //     },
+        //   ),
+        // ));
+        //
 
         _delete(context, tasks[i], isSwitched ? true : false);
       },
       child: Padding(
         padding: const EdgeInsets.all(3.0),
         child: TaskListTile(
-          callback: callbackChangeAmount,
+          callback: callbackChangeAmountMinus,
           context: context,
           task: tasks[i],
           onTap: () => EditTaskPage.show(context, task: tasks[i]),

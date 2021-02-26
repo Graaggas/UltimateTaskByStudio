@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:ultimate_task_by_studio/misc/converts.dart';
+import 'package:ultimate_task_by_studio/misc/show_alert_dialog.dart';
 import 'package:ultimate_task_by_studio/models/task.dart';
 import 'package:ultimate_task_by_studio/service/database.dart';
 
@@ -23,6 +24,7 @@ class TaskListTile extends StatefulWidget {
   final BuildContext context;
   final Function callback;
 
+
   TaskListTile({Key key, this.task, this.onTap, this.context, this.callback})
       : super(key: key);
 
@@ -36,6 +38,7 @@ class _TaskListTileState extends State<TaskListTile> {
   Future<void> _taskFlagDeleted(String uid, bool flag) async {
     final database = Provider.of<Database>(context, listen: false);
 
+    // widget.callback();
     final taskNew = Task(
       color: widget.task.color,
       creationDate: widget.task.creationDate,
@@ -47,7 +50,72 @@ class _TaskListTileState extends State<TaskListTile> {
       outOfDate: widget.task.outOfDate,
     );
 
-    await database.createTask(taskNew);
+    if (flag)
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              "Внимание!",
+              style: GoogleFonts.alice(
+                color: Colors.red,
+                fontSize: 22,
+              ),
+            ),
+            content: Text(
+              "Завершить задачу?",
+              style: GoogleFonts.alice(
+                color: Colors.black,
+                fontSize: 22,
+              ),
+            ),
+            actions: <Widget>[
+              Material(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                elevation: 4.0,
+                color: Colors.blue,
+                clipBehavior: Clip.antiAlias,
+                // Add This
+                child: MaterialButton(
+                    child: Text("Отмена",
+                        style: GoogleFonts.alice(
+                          color: Colors.white,
+                          fontSize: 22,
+                        )),
+                    onPressed: () =>
+                        Navigator.of(context).pop(false)),
+              ),
+              Material(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                elevation: 4.0,
+                color: Colors.red,
+                clipBehavior: Clip.antiAlias,
+                // Add This
+                child: MaterialButton(
+                    child: Text("Завершить",
+                        style: GoogleFonts.alice(
+                          color: Colors.white,
+                          fontSize: 22,
+                        )),
+                    onPressed: () {
+                      widget.callback();
+
+
+                      database.createTask(taskNew);
+
+                      Navigator.of(context).pop(true);
+                    }),
+              ),
+            ],
+          );
+        });
+    else {
+
+      database.createTask(taskNew);
+    }
+
   }
 
   selectDate(BuildContext context) async {
@@ -100,11 +168,16 @@ class _TaskListTileState extends State<TaskListTile> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            //16
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                Icon(Icons.lock_clock),
+                Icon(
+                  Icons.lock_clock,
+                  size: 16,
+                ),
                 // SvgPicture.asset(
                 //   'assets/icons/clock.svg',
                 //   color: Colors.black54,
@@ -117,19 +190,17 @@ class _TaskListTileState extends State<TaskListTile> {
                 Text(
                   convertFromDateTimeToString(widget.task.doingDate),
                   style: GoogleFonts.alice(
-                    textStyle: TextStyle(color: Colors.black, fontSize: 18),
+                    //18
+                    textStyle: TextStyle(color: Colors.black, fontSize: 16),
                   ),
                 ),
                 Spacer(),
                 !widget.task.isDeleted
                     ? InkWell(
-                        child: Icon(Icons.calendar_today),
-                        // child: SvgPicture.asset(
-                        //   'assets/icons/calendar.svg',
-                        //   color: Colors.black54,
-                        //   height: 20,
-                        //   width: 20,
-                        // ),
+                        child: Icon(
+                          Icons.calendar_today,
+                          size: 18,
+                        ),
                         onTap: () => selectDate(context),
                       )
                     : Container(),
@@ -138,28 +209,17 @@ class _TaskListTileState extends State<TaskListTile> {
                 ),
                 InkWell(
                     onTap: () {
-                      widget.callback();
+
                       !widget.task.isDeleted
                           ? _taskFlagDeleted(widget.task.id, true)
                           : _taskFlagDeleted(widget.task.id, false);
                     },
-                    // onTap: () => print("tapped"),
                     child: !widget.task.isDeleted
-                        ? Icon(Icons.done)
-                        //     ? SvgPicture.asset(
-                        //   'assets/icons/done.svg',
-                        //   color: Colors.black54,
-                        //   height: 20,
-                        //   width: 20,
-                        // )
-                        : Icon(Icons.refresh_outlined)
-                    // SvgPicture.asset(
-                    //   'assets/icons/fromtrash.svg',
-                    //   color: Colors.black54,
-                    //   height: 20,
-                    //   width: 20,
-                    // ),
-                    ),
+                        ? Icon(
+                            Icons.done,
+                            size: 18,
+                          )
+                        : Icon(Icons.refresh_outlined, size: 18,)),
               ],
             ),
           ),
@@ -184,65 +244,6 @@ class _TaskListTileState extends State<TaskListTile> {
           ),
         ],
       ),
-      // Column(
-      //   crossAxisAlignment: CrossAxisAlignment.start,
-      //   children: <Widget>[
-      //     Padding(
-      //       padding: const EdgeInsets.only(left: 8, right: 8),
-      //       child: Row(
-      //         children: <Widget>[
-      //           InkWell(
-      //             child: Row(
-      //               children: [
-      //                 Icon(
-      //                   Icons.timer,
-      //                   size: 15,
-      //                 ),
-      //                 SizedBox(
-      //                   width: 5,
-      //                 ),
-      //                 Text(
-      //                   "21.12.2021",
-      //                   style: GoogleFonts.alice(
-      //                     textStyle:
-      //                         TextStyle(color: Colors.black, fontSize: 14),
-      //                   ),
-      //                 ),
-      //               ],
-      //             ),
-      //             onTap: onTap,
-      //           ),
-      //           Spacer(),
-      //           IconButton(icon: Icon(Icons.done), onPressed: () {}),
-      //           IconButton(icon: Icon(Icons.calendar_today), onPressed: () {}),
-      //         ],
-      //       ),
-      //     ),
-      //     InkWell(
-      //       onTap: onTap,
-      //       child: Container(
-      //         width: double.infinity,
-      //         child: Padding(
-      //           padding: const EdgeInsets.all(8.0),
-      //           child: Text(
-      //             task.memo,
-      //             maxLines: 3,
-      //             overflow: TextOverflow.fade,
-      //             softWrap: true,
-      //             style: GoogleFonts.alice(
-      //               textStyle: TextStyle(color: Colors.black, fontSize: 18),
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
-    // return ListTile(
-    //   title: Text(task.memo),
-    //   trailing: Icon(Icons.chevron_right),
-    //   onTap: onTap,
-    // );
   }
 }
