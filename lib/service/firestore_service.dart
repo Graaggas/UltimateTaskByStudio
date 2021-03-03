@@ -21,6 +21,7 @@ class FireStoreService {
 
     //! await убираем
     reference.delete();
+
   }
 
   Future<void> deleteAllDone({@required String path}) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:ultimate_task_by_studio/mobx/amount.dart';
 import 'package:uuid/uuid.dart';
 import 'package:ultimate_task_by_studio/misc/constants.dart';
 import 'package:ultimate_task_by_studio/misc/converts.dart';
@@ -10,17 +11,16 @@ import 'package:ultimate_task_by_studio/service/database.dart';
 
 class AddTaskPage extends StatefulWidget {
   final Database database;
-  final Function callbackChangeAmount;
 
-  AddTaskPage({Key key, this.database, this.callbackChangeAmount}) : super(key: key);
+  AddTaskPage({Key key, this.database}) : super(key: key);
 
   //* контекст берется из taskPage, потому как show запускается именно оттуда.
-  static Future<void> show(BuildContext context, Function callbackChangeAmount) async {
+  static Future<void> show(
+      BuildContext context) async {
     final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddTaskPage(
-          callbackChangeAmount: callbackChangeAmount,
           database: database,
         ),
         fullscreenDialog: true,
@@ -56,26 +56,28 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _submit(String uid, BuildContext context) async {
-
+    final amount = Provider.of<Amount>(context, listen: false);
     if (_validateAndSaveForm()) {
       final task = Task(
         color: convertColorToString(currentColor),
         creationDate: DateTime.now(),
         doingDate:
-        selectedDate == DateTime.now() ? DateTime.now() : selectedDate,
+            selectedDate == DateTime.now() ? DateTime.now() : selectedDate,
         id: uid,
         isDeleted: false,
         lastEditDate: DateTime.now(),
         memo: _memo,
         outOfDate: false,
       );
-      print("/add_task_page/ doingDate = ${ convertFromDateTimeToString(task.doingDate)}");
+      print(
+          "/add_task_page/ doingDate = ${convertFromDateTimeToString(task.doingDate)}");
       //! await убираем
-      widget.callbackChangeAmount();
+
       widget.database.createTask(task);
+
+
+      amount.increment();
       Navigator.of(context).pop(true);
-
-
     }
   }
 
@@ -153,18 +155,18 @@ class _AddTaskPageState extends State<AddTaskPage> {
     return !isColorCirclesVisible
         ? Container()
         : Container(
-      child: Card(
-        elevation: 4,
-        color: Colors.white.withOpacity(0.9),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _buildExpandableColorCircleField(),
-        ),
-      ),
-    );
+            child: Card(
+              elevation: 4,
+              color: Colors.white.withOpacity(0.9),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildExpandableColorCircleField(),
+              ),
+            ),
+          );
   }
 
   Card _buildCardForMemo() {
@@ -228,21 +230,21 @@ class _AddTaskPageState extends State<AddTaskPage> {
           ),
           !isColorCirclesVisible
               ? IconButton(
-            icon: Icon(Icons.arrow_drop_down),
-            onPressed: () {
-              setState(() {
-                isColorCirclesVisible = !isColorCirclesVisible;
-              });
-            },
-          )
+                  icon: Icon(Icons.arrow_drop_down),
+                  onPressed: () {
+                    setState(() {
+                      isColorCirclesVisible = !isColorCirclesVisible;
+                    });
+                  },
+                )
               : IconButton(
-            icon: Icon(Icons.arrow_drop_up),
-            onPressed: () {
-              setState(() {
-                isColorCirclesVisible = !isColorCirclesVisible;
-              });
-            },
-          ),
+                  icon: Icon(Icons.arrow_drop_up),
+                  onPressed: () {
+                    setState(() {
+                      isColorCirclesVisible = !isColorCirclesVisible;
+                    });
+                  },
+                ),
         ],
       ),
     );

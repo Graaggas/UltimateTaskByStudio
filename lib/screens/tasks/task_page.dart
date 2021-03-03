@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import 'package:ultimate_task_by_studio/misc/converts.dart';
 import 'package:ultimate_task_by_studio/misc/show_alert_dialog.dart';
 import 'package:ultimate_task_by_studio/misc/show_exception_dialog.dart';
 import 'package:ultimate_task_by_studio/misc/show_message.dart';
+import 'package:ultimate_task_by_studio/mobx/amount.dart';
 import 'package:ultimate_task_by_studio/models/task.dart';
 import 'package:ultimate_task_by_studio/screens/tasks/add_task_page.dart';
 import 'package:ultimate_task_by_studio/screens/tasks/edit_task_page.dart';
@@ -38,8 +40,8 @@ Future<void> _delete(
 
     //! await убираем
     database.deleteTask(task);
-
-
+    final amount = Provider.of<Amount>(context, listen: false);
+    amount.decrement();
   } on FirebaseException catch (e) {
     showExceptionAlertDialog(context, title: "Operation failed", exception: e);
   }
@@ -51,27 +53,12 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-
-
-
   bool isSwitched = false;
   bool isAnythingForDone = false;
-
-  int amount = 0;
 
   List<Task> tasksToday = [];
   List<Task> tasksTomorrow = [];
   List tasksFuture = [];
-
-  /*ф-ия для обновления этого виджета из виджета TaskListTile*/
-  callbackChangeAmountMinus() {
-    setState(() {});
-  }
-  callbackChangeAmountPlus(){
-    setState(() {
-      amount++;
-    });
-  }
 
   Future<void> _signOut(BuildContext context) async {
     try {
@@ -117,10 +104,20 @@ class _TasksPageState extends State<TasksPage> {
     ).show();
   }
 
+  Future<int> getAmount() async{
+    final database =  Provider.of<Database>(context, listen: false);
+    return database.getTasksLength();
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthBase>(context, listen: false);
     final database = Provider.of<Database>(context, listen: false);
+    final amount = Provider.of<Amount>(context, listen: false);
+
+    getAmount().then((value) => amount.getStartAmount(value));
+
+
 
     return Scaffold(
       backgroundColor: Color(myBackgroundColor),
@@ -135,20 +132,13 @@ class _TasksPageState extends State<TasksPage> {
                 textStyle: TextStyle(color: Colors.black, fontSize: 22),
               ),
             ),
-            FutureBuilder<int>(
-              future: database.getTasksLength(),
-              builder: (context, snapshot) {
-                amount = snapshot.data;
-                if (!snapshot.hasData) {
-                  amount = 0;
-                }
-                return Text(
-                  isSwitched ? "Завершенные" : "Текущие задачи (${amount})",
-                  style: GoogleFonts.alice(
-                    textStyle: TextStyle(color: Colors.black87, fontSize: 22),
-                  ),
-                );
-              },
+            Observer(
+              builder: (_) => Text(
+                isSwitched ? "Завершенные" : "Текущие задачи (${amount.value})",
+                style: GoogleFonts.alice(
+                  textStyle: TextStyle(color: Colors.black87, fontSize: 22),
+                ),
+              ),
             ),
           ],
         ),
@@ -179,7 +169,7 @@ class _TasksPageState extends State<TasksPage> {
           ? FloatingActionButton(
               backgroundColor: Color(myBlackLightColor),
               child: Icon(Icons.add),
-              onPressed: () => AddTaskPage.show(context, callbackChangeAmountMinus),
+              onPressed: () => AddTaskPage.show(context),
             )
           : FloatingActionButton(
               onPressed: () async {
@@ -233,7 +223,6 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 
-
   Widget _buildContexts(BuildContext context, Database database) {
 
 
@@ -255,13 +244,17 @@ class _TasksPageState extends State<TasksPage> {
           //сортировка списка
           tasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
 
+
           tasks.forEach((element) {
             if (element.isDeleted == false) {
               undoneTasks.add(element);
+
             } else {
               doneTasks.add(element);
             }
           });
+
+
 
           var now = DateTime.now();
           var tomorrow = now.add(new Duration(days: 1));
@@ -462,7 +455,7 @@ class _TasksPageState extends State<TasksPage> {
       },
       onDismissed: (direction) {
         // callbackChangeAmount();
-      //TODO если добавить строку выше, то все работает, но страница обновляется дважды и элемент прыгает на своем месте.
+        //TODO если добавить строку выше, то все работает, но страница обновляется дважды и элемент прыгает на своем месте.
 
         // Task deletingTask = Task(
         //   color: tasks[i].color,
@@ -493,7 +486,6 @@ class _TasksPageState extends State<TasksPage> {
       child: Padding(
         padding: const EdgeInsets.all(3.0),
         child: TaskListTile(
-          callback: callbackChangeAmountMinus,
           context: context,
           task: tasks[i],
           onTap: () => EditTaskPage.show(context, task: tasks[i]),

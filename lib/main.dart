@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:ultimate_task_by_studio/landing_page.dart';
+import 'package:ultimate_task_by_studio/mobx/amount.dart';
 import 'package:ultimate_task_by_studio/screens/tasks/color_bloc.dart';
 import 'package:ultimate_task_by_studio/service/auth.dart';
 
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider<AuthBase>.value(value: Auth()),
         Provider<ColorCircleBloc>.value(value: ColorCircleBloc()),
+        Provider<Amount>.value(value: Amount()),
       ],
       child: MaterialApp(
         localizationsDelegates: [

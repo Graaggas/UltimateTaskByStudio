@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:ultimate_task_by_studio/misc/converts.dart';
 import 'package:ultimate_task_by_studio/misc/show_alert_dialog.dart';
+import 'package:ultimate_task_by_studio/mobx/amount.dart';
 import 'package:ultimate_task_by_studio/models/task.dart';
 import 'package:ultimate_task_by_studio/service/database.dart';
 
@@ -35,6 +36,7 @@ class TaskListTile extends StatefulWidget {
 class _TaskListTileState extends State<TaskListTile> {
   DateTime selectedDate = DateTime.now();
 
+
   Future<void> _taskFlagDeleted(String uid, bool flag) async {
     final database = Provider.of<Database>(context, listen: false);
 
@@ -54,6 +56,7 @@ class _TaskListTileState extends State<TaskListTile> {
       await showDialog(
         context: context,
         builder: (BuildContext context) {
+          final amount = Provider.of<Amount>(context, listen: false);
           return AlertDialog(
             title: Text(
               "Внимание!",
@@ -100,9 +103,7 @@ class _TaskListTileState extends State<TaskListTile> {
                           fontSize: 22,
                         )),
                     onPressed: () {
-                      widget.callback();
-
-
+                      amount.decrement();
                       database.createTask(taskNew);
 
                       Navigator.of(context).pop(true);
