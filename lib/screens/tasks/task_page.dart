@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:mobx/mobx.dart';
 import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:ultimate_task_by_studio/misc/constants.dart';
@@ -104,8 +105,8 @@ class _TasksPageState extends State<TasksPage> {
     ).show();
   }
 
-  Future<int> getAmount() async{
-    final database =  Provider.of<Database>(context, listen: false);
+  Future<int> getAmount() async {
+    final database = Provider.of<Database>(context, listen: false);
     return database.getTasksLength();
   }
 
@@ -116,8 +117,6 @@ class _TasksPageState extends State<TasksPage> {
     final amount = Provider.of<Amount>(context, listen: false);
 
     getAmount().then((value) => amount.getStartAmount(value));
-
-
 
     return Scaffold(
       backgroundColor: Color(myBackgroundColor),
@@ -133,16 +132,19 @@ class _TasksPageState extends State<TasksPage> {
               ),
             ),
             Observer(
-              builder: (_) => Text(
-                isSwitched ? "Завершенные" : "Текущие задачи (${amount.value})",
-                style: GoogleFonts.alice(
-                  textStyle: TextStyle(color: Colors.black87, fontSize: 22),
+              builder: (_) => FittedBox(
+                fit: BoxFit.fitWidth,
+                child: Text(
+                  isSwitched ? "Завершенные" : "Текущие (${amount.value})",
+                  style: GoogleFonts.alice(
+                    textStyle: TextStyle(color: Colors.black87, fontSize: 20),
+                  ),
                 ),
               ),
             ),
           ],
         ),
-        centerTitle: true,
+        centerTitle: false,
         actions: <Widget>[
           Switch(
               // inactiveTrackColor: Color(myMintColor),
@@ -224,13 +226,10 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget _buildContexts(BuildContext context, Database database) {
-
-
     return StreamBuilder<List<Task>>(
       stream: database.tasksStream(),
       builder: (context, snapshot) {
         final tasks = snapshot.data;
-
 
         var indexTomorrow = 0;
         bool flagTommorow = false;
@@ -244,54 +243,51 @@ class _TasksPageState extends State<TasksPage> {
           //сортировка списка
           tasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
 
-
           tasks.forEach((element) {
             if (element.isDeleted == false) {
               undoneTasks.add(element);
-
+              print("task_page // memo = ${element.memo}");
             } else {
               doneTasks.add(element);
             }
           });
 
-
-
           var now = DateTime.now();
           var tomorrow = now.add(new Duration(days: 1));
           var nextDayAfterTomorrow = now.add(new Duration(days: 2));
 
-          print('~~ today is ${convertFromDateTimeToString(now)}');
-          print('~~ tomorrow is ${convertFromDateTimeToString(tomorrow)}');
-          print(
-              '~~ newtDayAfterTomorrow is ${convertFromDateTimeToString(nextDayAfterTomorrow)}');
+          // print('~~ today is ${convertFromDateTimeToString(now)}');
+          // print('~~ tomorrow is ${convertFromDateTimeToString(tomorrow)}');
+          // print(
+          //     '~~ newtDayAfterTomorrow is ${convertFromDateTimeToString(nextDayAfterTomorrow)}');
           Duration diff;
 
           // undoneTasks.forEach((element)
           for (int i = 0; i < undoneTasks.length; i++) {
             Task element = undoneTasks[i];
-            print("\n\tindex = $i");
+            // print("\n\tindex = $i");
 
             /*просроченные задачи выставляем в "сегодня"*/
             if (element.doingDate.isBefore(now)) {
               element.doingDate = now;
             }
 
-            print(
-                "\x1B[33m \t\tday is ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
+            // print(
+            //     "\x1B[33m \t\tday is ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
             diff = element.doingDate.difference(nextDayAfterTomorrow);
-            print("~ NextDayAfterTomorrow diff is ${diff.inDays}");
+            // print("~ NextDayAfterTomorrow diff is ${diff.inDays}");
 
             if (diff.inDays == -1) {
               // tasksTomorrow.add(element);
               if (flagTommorow == false) {
                 indexTomorrow = i;
                 flagTommorow = true;
-                print(
-                    "\t\t\t indexTomorrow = $indexTomorrow / flagTomorrow = $flagTommorow");
+                // print(
+                //     "\t\t\t indexTomorrow = $indexTomorrow / flagTomorrow = $flagTommorow");
               }
 
-              print(
-                  "\x1B[31m /tomorrow/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
+              // print(
+              //     "\x1B[31m /tomorrow/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
               continue;
             }
 
@@ -302,14 +298,14 @@ class _TasksPageState extends State<TasksPage> {
             }
 
             if (element.doingDate.isAfter(tomorrow)) {
-              print(
-                  "\x1B[34m /future/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
+              // print(
+              //     "\x1B[34m /future/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
               // tasksFuture.add(element);
               if (flagFuture == false) {
                 flagFuture = true;
                 indexFuture = i;
-                print(
-                    "\t\t\t indexFuture = $indexFuture / flagFuture = $flagFuture");
+                // print(
+                //     "\t\t\t indexFuture = $indexFuture / flagFuture = $flagFuture");
               }
 
               print("\n");
@@ -335,7 +331,16 @@ class _TasksPageState extends State<TasksPage> {
                   itemCount: undoneTasks.length,
                   itemBuilder: (context, i) {
                     // return Card(child: Text(undoneTasks[i].memo),);
-                    return dismissibleTask(undoneTasks, i, context);
+                    // return dismissibleTask(undoneTasks, i, context);
+                    return Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: TaskListTile(
+                        context: context,
+                        task: undoneTasks[i],
+                        onTap: () =>
+                            EditTaskPage.show(context, task: undoneTasks[i]),
+                      ),
+                    );
                   },
                   separatorBuilder: (context, i) {
                     if (indexTomorrow == i + 1) {
@@ -400,19 +405,26 @@ class _TasksPageState extends State<TasksPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text(
-                  "Внимание!",
-                  style: GoogleFonts.alice(
-                    color: Colors.red,
-                    fontSize: 22,
-                  ),
-                ),
-                content: Text(
-                  "Удалить задачу?",
-                  style: GoogleFonts.alice(
-                    color: Colors.black,
-                    fontSize: 22,
-                  ),
+                // title: Text(
+                //   "Внимание!",
+                //   style: GoogleFonts.alice(
+                //     color: Colors.red,
+                //     fontSize: 22,
+                //   ),
+                // ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    buildCardForDialog(tasks, i),
+                    SizedBox(height: 20,),
+                    Text(
+                      "Удалить задачу?",
+                      style: GoogleFonts.alice(
+                        color: Colors.black,
+                        fontSize: 22,
+                      ),
+                    ),
+                  ],
                 ),
                 actions: <Widget>[
                   Material(
@@ -454,33 +466,6 @@ class _TasksPageState extends State<TasksPage> {
             });
       },
       onDismissed: (direction) {
-        // callbackChangeAmount();
-        //TODO если добавить строку выше, то все работает, но страница обновляется дважды и элемент прыгает на своем месте.
-
-        // Task deletingTask = Task(
-        //   color: tasks[i].color,
-        //   creationDate: DateTime.now(),
-        //   doingDate: tasks[i].doingDate,
-        //   id: tasks[i].id,
-        //   isDeleted: tasks[i].isDeleted,
-        //   lastEditDate: tasks[i].lastEditDate,
-        //   memo: tasks[i].memo,
-        //   outOfDate: tasks[i].outOfDate,
-        // );
-        // Scaffold.of(context).hideCurrentSnackBar();
-        // Scaffold.of(context).showSnackBar(SnackBar(
-        //   content: Text("Задача удалена"),
-        //   duration: Duration(seconds: 2),
-        //   action: SnackBarAction(
-        //     label: "Отмена",
-        //     onPressed: () {
-        //       database.createTask(deletingTask);
-        //
-        //     },
-        //   ),
-        // ));
-        //
-
         _delete(context, tasks[i], isSwitched ? true : false);
       },
       child: Padding(
@@ -492,6 +477,66 @@ class _TasksPageState extends State<TasksPage> {
         ),
       ),
     );
+  }
+
+  Card buildCardForDialog(List<Task> tasks, int i) {
+    return Card(
+                    elevation: 6,
+                    color: Color(int.parse(tasks[i].color)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          //16
+                          padding: const EdgeInsets.only(
+                              left: 16, right: 16, top: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                              Icon(
+                                Icons.lock_clock,
+                                size: 16,
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                convertFromDateTimeToString(
+                                    tasks[i].doingDate),
+                                style: GoogleFonts.alice(
+                                  //18
+                                  textStyle: TextStyle(
+                                      color: Colors.black, fontSize: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Container(
+                            width: double.infinity,
+                            child: Text(
+                              tasks[i].memo,
+                              maxLines: 3,
+                              overflow: TextOverflow.fade,
+                              softWrap: true,
+                              style: GoogleFonts.alice(
+                                textStyle: TextStyle(
+                                    color: Colors.black, fontSize: 18),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
   }
 
   Padding dateSeparator(String text) {

@@ -25,7 +25,6 @@ class TaskListTile extends StatefulWidget {
   final BuildContext context;
   final Function callback;
 
-
   TaskListTile({Key key, this.task, this.onTap, this.context, this.callback})
       : super(key: key);
 
@@ -35,7 +34,6 @@ class TaskListTile extends StatefulWidget {
 
 class _TaskListTileState extends State<TaskListTile> {
   DateTime selectedDate = DateTime.now();
-
 
   Future<void> _taskFlagDeleted(String uid, bool flag) async {
     final database = Provider.of<Database>(context, listen: false);
@@ -54,69 +52,129 @@ class _TaskListTileState extends State<TaskListTile> {
 
     if (flag)
       await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          final amount = Provider.of<Amount>(context, listen: false);
-          return AlertDialog(
-            title: Text(
-              "Внимание!",
-              style: GoogleFonts.alice(
-                color: Colors.red,
-                fontSize: 22,
+          context: context,
+          builder: (BuildContext context) {
+            final amount = Provider.of<Amount>(context, listen: false);
+            return AlertDialog(
+              // title: Text(
+              //   "Внимание!",
+              //   style: GoogleFonts.alice(
+              //     color: Colors.red,
+              //     fontSize: 22,
+              //   ),
+              // ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  //TODO card
+                  buildCardInDialog(),
+                  SizedBox(height: 20,),
+                  Text(
+                    "Завершить задачу?",
+                    style: GoogleFonts.alice(
+                      color: Colors.black,
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            content: Text(
-              "Завершить задачу?",
-              style: GoogleFonts.alice(
-                color: Colors.black,
-                fontSize: 22,
-              ),
-            ),
-            actions: <Widget>[
-              Material(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0)),
-                elevation: 4.0,
-                color: Colors.blue,
-                clipBehavior: Clip.antiAlias,
-                // Add This
-                child: MaterialButton(
-                    child: Text("Отмена",
-                        style: GoogleFonts.alice(
-                          color: Colors.white,
-                          fontSize: 22,
-                        )),
-                    onPressed: () =>
-                        Navigator.of(context).pop(false)),
-              ),
-              Material(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0)),
-                elevation: 4.0,
-                color: Colors.red,
-                clipBehavior: Clip.antiAlias,
-                // Add This
-                child: MaterialButton(
-                    child: Text("Завершить",
-                        style: GoogleFonts.alice(
-                          color: Colors.white,
-                          fontSize: 22,
-                        )),
-                    onPressed: () {
-                      amount.decrement();
-                      database.createTask(taskNew);
+              actions: <Widget>[
+                Material(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0)),
+                  elevation: 4.0,
+                  color: Colors.blue,
+                  clipBehavior: Clip.antiAlias,
+                  // Add This
+                  child: MaterialButton(
+                      child: Text("Отмена",
+                          style: GoogleFonts.alice(
+                            color: Colors.white,
+                            fontSize: 22,
+                          )),
+                      onPressed: () => Navigator.of(context).pop(false)),
+                ),
+                Material(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0)),
+                  elevation: 4.0,
+                  color: Colors.red,
+                  clipBehavior: Clip.antiAlias,
+                  // Add This
+                  child: MaterialButton(
+                      child: Text("Завершить",
+                          style: GoogleFonts.alice(
+                            color: Colors.white,
+                            fontSize: 22,
+                          )),
+                      onPressed: () {
+                        amount.decrement();
+                        database.createTask(taskNew);
 
-                      Navigator.of(context).pop(true);
-                    }),
-              ),
-            ],
-          );
-        });
+                        Navigator.of(context).pop(true);
+                      }),
+                ),
+              ],
+            );
+          });
     else {
-
       database.createTask(taskNew);
     }
+  }
 
+  Card buildCardInDialog() {
+    return Card(
+                  elevation: 6,
+                  color: Color(int.parse(widget.task.color)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        //16
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Icon(
+                              Icons.lock_clock,
+                              size: 16,
+                            ),
+                            SizedBox(width: 10,),
+                            Text(
+                              convertFromDateTimeToString(widget.task.doingDate),
+                              style: GoogleFonts.alice(
+                                //18
+                                textStyle: TextStyle(color: Colors.black, fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Container(
+                          width: double.infinity,
+                          child: Text(
+                            widget.task.memo,
+                            maxLines: 3,
+                            overflow: TextOverflow.fade,
+                            softWrap: true,
+                            style: GoogleFonts.alice(
+                              textStyle: TextStyle(color: Colors.black, fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
   }
 
   selectDate(BuildContext context) async {
@@ -210,7 +268,6 @@ class _TaskListTileState extends State<TaskListTile> {
                 ),
                 InkWell(
                     onTap: () {
-
                       !widget.task.isDeleted
                           ? _taskFlagDeleted(widget.task.id, true)
                           : _taskFlagDeleted(widget.task.id, false);
@@ -220,7 +277,10 @@ class _TaskListTileState extends State<TaskListTile> {
                             Icons.done,
                             size: 18,
                           )
-                        : Icon(Icons.refresh_outlined, size: 18,)),
+                        : Icon(
+                            Icons.refresh_outlined,
+                            size: 18,
+                          )),
               ],
             ),
           ),
