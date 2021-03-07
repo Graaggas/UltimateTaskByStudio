@@ -2,15 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:mobx/mobx.dart';
 import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:ultimate_task_by_studio/misc/constants.dart';
 import 'package:ultimate_task_by_studio/misc/converts.dart';
-import 'package:ultimate_task_by_studio/misc/show_alert_dialog.dart';
 import 'package:ultimate_task_by_studio/misc/show_exception_dialog.dart';
-import 'package:ultimate_task_by_studio/misc/show_message.dart';
 import 'package:ultimate_task_by_studio/mobx/amount.dart';
 import 'package:ultimate_task_by_studio/models/task.dart';
 import 'package:ultimate_task_by_studio/screens/tasks/add_task_page.dart';
@@ -231,14 +227,20 @@ class _TasksPageState extends State<TasksPage> {
       builder: (context, snapshot) {
         final tasks = snapshot.data;
 
-        var indexTomorrow = 0;
+        var indexTomorrow = -1;
+
         bool flagTommorow = false;
         bool flagFuture = false;
-        var indexFuture = 0;
+        var indexFuture = -1;
 
         if (snapshot.hasData) {
           final List<Task> doneTasks = [];
           final List<Task> undoneTasks = [];
+
+          final List<Task> undoneTasksToday = [];
+          final List<Task> undoneTasksTomorrow = [];
+          final List<Task> undoneTasksFuture = [];
+          List<Task> finalUndoneTasks = [];
 
           //сортировка списка
           tasks.sort((a, b) => a.doingDate.compareTo(b.doingDate));
@@ -246,7 +248,6 @@ class _TasksPageState extends State<TasksPage> {
           tasks.forEach((element) {
             if (element.isDeleted == false) {
               undoneTasks.add(element);
-              print("task_page // memo = ${element.memo}");
             } else {
               doneTasks.add(element);
             }
@@ -256,61 +257,107 @@ class _TasksPageState extends State<TasksPage> {
           var tomorrow = now.add(new Duration(days: 1));
           var nextDayAfterTomorrow = now.add(new Duration(days: 2));
 
-          // print('~~ today is ${convertFromDateTimeToString(now)}');
-          // print('~~ tomorrow is ${convertFromDateTimeToString(tomorrow)}');
-          // print(
-          //     '~~ newtDayAfterTomorrow is ${convertFromDateTimeToString(nextDayAfterTomorrow)}');
           Duration diff;
 
-          // undoneTasks.forEach((element)
+          // Просроченные задачи добавляются в "Сегодня"
           for (int i = 0; i < undoneTasks.length; i++) {
             Task element = undoneTasks[i];
-            // print("\n\tindex = $i");
 
             /*просроченные задачи выставляем в "сегодня"*/
             if (element.doingDate.isBefore(now)) {
               element.doingDate = now;
             }
 
-            // print(
-            //     "\x1B[33m \t\tday is ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
             diff = element.doingDate.difference(nextDayAfterTomorrow);
-            // print("~ NextDayAfterTomorrow diff is ${diff.inDays}");
+
+            // final diffForToday = element.doingDate.difference(now).inDays;
+
+            //заполняем сегодняшние задачи
+            // if (diffForToday == 0) {
+            //  //undoneTasksToday.add(element);
+            // // continue;
+            // }
 
             if (diff.inDays == -1) {
-              // tasksTomorrow.add(element);
               if (flagTommorow == false) {
                 indexTomorrow = i;
                 flagTommorow = true;
-                // print(
-                //     "\t\t\t indexTomorrow = $indexTomorrow / flagTomorrow = $flagTommorow");
               }
 
-              // print(
-              //     "\x1B[31m /tomorrow/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
               continue;
             }
 
-            if (element.doingDate.isBefore(tomorrow)) {
-              print(
-                  "\x1B[36m /today/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
-              //tasksToday.add(element);
-            }
+            // if (element.doingDate.isBefore(tomorrow)) {
+            //   print(
+            //       "\x1B[36m /today/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
+            // }
 
             if (element.doingDate.isAfter(tomorrow)) {
-              // print(
-              //     "\x1B[34m /future/ = ${convertFromDateTimeToString(element.doingDate)}\x1B[0m");
-              // tasksFuture.add(element);
               if (flagFuture == false) {
                 flagFuture = true;
                 indexFuture = i;
-                // print(
-                //     "\t\t\t indexFuture = $indexFuture / flagFuture = $flagFuture");
               }
 
               print("\n");
             }
           }
+
+          //Формирование списков
+          print("tomorrow = $indexTomorrow, future = $indexFuture");
+          for (int i = 0; i < undoneTasks.length; i++) {
+            if (i < indexTomorrow) {
+              print("\\\ today => [$i] ${undoneTasks[i].memo}");
+              undoneTasksToday.add(undoneTasks[i]);
+            }
+            if (i >= indexTomorrow && i < indexFuture) {
+              print("\\\ tomorrow =>[$i] ${undoneTasks[i].memo}");
+              undoneTasksTomorrow.add(undoneTasks[i]);
+            }
+
+            if (i >= indexFuture) {
+              print("\\\ future =>[$i] ${undoneTasks[i].memo}");
+              undoneTasksFuture.add(undoneTasks[i]);
+            }
+          }
+
+          //сортировка задач по цвету
+          undoneTasksToday.sort((a, b) => a.color.compareTo(b.color));
+          undoneTasksTomorrow.sort((a, b) => a.color.compareTo(b.color));
+          undoneTasksFuture.sort((a, b) => a.color.compareTo(b.color));
+
+          //формирование конечного цикла
+          finalUndoneTasks = [
+            ...undoneTasksToday,
+            ...undoneTasksTomorrow,
+            ...undoneTasksFuture
+          ];
+
+          //контрольный вывод cписка в консоль
+          print("---------------");
+          print("FOR TODAY");
+          for (int i = 0; i < undoneTasksToday.length; i++) {
+            print("[$i]. ${undoneTasksToday[i].memo}");
+          }
+          //контрольный вывод cписка в консоль
+          print("---------------");
+          print("FOR TOMORROW");
+          for (int i = 0; i < undoneTasksTomorrow.length; i++) {
+            print("[$i]. ${undoneTasksTomorrow[i].memo}");
+          }
+          //контрольный вывод cписка в консоль
+          print("---------------");
+          print("FOR FUTURE");
+          for (int i = 0; i < undoneTasksFuture.length; i++) {
+            print("[$i]. ${undoneTasksFuture[i].memo}");
+          }
+          //контрольный вывод cписка в консоль
+          print("---------------");
+          print("FOR ALL");
+          for (int i = 0; i < finalUndoneTasks.length; i++) {
+            print("[$i]. ${finalUndoneTasks[i].memo}");
+          }
+
+
 
           switch (isSwitched) {
             case true:
@@ -326,19 +373,17 @@ class _TasksPageState extends State<TasksPage> {
               }
               break;
             case false:
-              if (undoneTasks.isNotEmpty) {
+              if (finalUndoneTasks.isNotEmpty) {
                 return ListView.separated(
-                  itemCount: undoneTasks.length,
+                  itemCount: finalUndoneTasks.length,
                   itemBuilder: (context, i) {
-                    // return Card(child: Text(undoneTasks[i].memo),);
-                    // return dismissibleTask(undoneTasks, i, context);
                     return Padding(
-                      padding: const EdgeInsets.all(3.0),
+                      padding: const EdgeInsets.all(1.0),
                       child: TaskListTile(
                         context: context,
-                        task: undoneTasks[i],
+                        task: finalUndoneTasks[i],
                         onTap: () =>
-                            EditTaskPage.show(context, task: undoneTasks[i]),
+                            EditTaskPage.show(context, task: finalUndoneTasks[i]),
                       ),
                     );
                   },
@@ -377,7 +422,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Dismissible dismissibleTask(List<Task> tasks, int i, BuildContext context) {
-    var database = Provider.of<Database>(context, listen: false);
+    // var database = Provider.of<Database>(context, listen: false);
     return Dismissible(
       background: Container(
         color: Color(myBackgroundColor),
@@ -416,7 +461,9 @@ class _TasksPageState extends State<TasksPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     buildCardForDialog(tasks, i),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     Text(
                       "Удалить задачу?",
                       style: GoogleFonts.alice(
@@ -481,67 +528,64 @@ class _TasksPageState extends State<TasksPage> {
 
   Card buildCardForDialog(List<Task> tasks, int i) {
     return Card(
-                    elevation: 6,
-                    color: Color(int.parse(tasks[i].color)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          //16
-                          padding: const EdgeInsets.only(
-                              left: 16, right: 16, top: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: <Widget>[
-                              Icon(
-                                Icons.lock_clock,
-                                size: 16,
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                convertFromDateTimeToString(
-                                    tasks[i].doingDate),
-                                style: GoogleFonts.alice(
-                                  //18
-                                  textStyle: TextStyle(
-                                      color: Colors.black, fontSize: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Divider(),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Container(
-                            width: double.infinity,
-                            child: Text(
-                              tasks[i].memo,
-                              maxLines: 3,
-                              overflow: TextOverflow.fade,
-                              softWrap: true,
-                              style: GoogleFonts.alice(
-                                textStyle: TextStyle(
-                                    color: Colors.black, fontSize: 18),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
+      elevation: 6,
+      color: Color(int.parse(tasks[i].color)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            //16
+            padding:
+                const EdgeInsets.only(left: 16.0, right: 16, top: 0, bottom: 3),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                Icon(
+                  Icons.lock_clock,
+                  size: 16,
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Text(
+                  convertFromDateTimeToString(tasks[i].doingDate),
+                  style: GoogleFonts.alice(
+                    //18
+                    textStyle: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              width: double.infinity,
+              child: Text(
+                tasks[i].memo,
+                maxLines: 3,
+                overflow: TextOverflow.fade,
+                softWrap: true,
+                style: GoogleFonts.alice(
+                  textStyle: TextStyle(color: Colors.black, fontSize: 18),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Padding dateSeparator(String text) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(1.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -557,7 +601,7 @@ class _TasksPageState extends State<TasksPage> {
             style: GoogleFonts.alice(
               textStyle: TextStyle(
                   color: Colors.black87,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold),
             ),
           ),

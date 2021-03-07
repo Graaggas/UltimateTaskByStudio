@@ -158,7 +158,7 @@ class _TaskListTileState extends State<TaskListTile> {
                       ),
                       Divider(),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.only(left: 16.0, right: 16, top: 0, bottom: 3),
                         child: Container(
                           width: double.infinity,
                           child: Text(
@@ -212,8 +212,8 @@ class _TaskListTileState extends State<TaskListTile> {
     selectedDate = DateTime.fromMillisecondsSinceEpoch(
         widget.task.doingDate.millisecondsSinceEpoch * 1000);
 
-    print(
-        "/task_list_title/ doingDate = ${convertFromDateTimeToString(widget.task.doingDate)}");
+    // print(
+    //     "/task_list_title/ doingDate = ${convertFromDateTimeToString(widget.task.doingDate)}");
 
     return Card(
       //margin: EdgeInsets.all(10),
@@ -288,12 +288,12 @@ class _TaskListTileState extends State<TaskListTile> {
           InkWell(
             onTap: widget.onTap,
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(left: 16.0, right: 16, top: 0, bottom: 3),
               child: Container(
                 width: double.infinity,
                 child: Text(
                   widget.task.memo,
-                  maxLines: 3,
+                  maxLines: 16,
                   overflow: TextOverflow.fade,
                   softWrap: true,
                   style: GoogleFonts.alice(
