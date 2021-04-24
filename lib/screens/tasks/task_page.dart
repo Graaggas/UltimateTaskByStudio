@@ -266,6 +266,10 @@ class _TasksPageState extends State<TasksPage> {
             /*просроченные задачи выставляем в "сегодня"*/
             if (element.doingDate.isBefore(now)) {
               element.doingDate = now;
+              // print(
+              //     "// просрочка: ${element.memo}, дата: ${element.doingDate}");
+              undoneTasksToday.add(element);
+              print("today: ${element.memo}");
             }
 
             diff = element.doingDate.difference(nextDayAfterTomorrow);
@@ -279,10 +283,19 @@ class _TasksPageState extends State<TasksPage> {
             // }
 
             if (diff.inDays == -1) {
-              if (flagTommorow == false) {
+              print("// diff.inDays = ${diff.inDays}");
+              print("tomorrow: ${element.memo}");
+              if(!flagTommorow){
                 indexTomorrow = i;
                 flagTommorow = true;
               }
+
+              undoneTasksTomorrow.add(element);
+              // if (flagTommorow == false) {
+              //   indexTomorrow = i;
+              //   print("-- indexTomorrow = $indexTomorrow");
+              //   flagTommorow = true;
+              // }
 
               continue;
             }
@@ -293,32 +306,45 @@ class _TasksPageState extends State<TasksPage> {
             // }
 
             if (element.doingDate.isAfter(tomorrow)) {
-              if (flagFuture == false) {
-                flagFuture = true;
+              print("future: ${element.memo}");
+              if (!flagFuture) {
                 indexFuture = i;
+                flagFuture = true;
               }
 
+              undoneTasksFuture.add(element);
+              // if (flagFuture == false) {
+              //   flagFuture = true;
+              //   indexFuture = i;
+              //   print("//indexFuture = $indexFuture, task = ${element.memo}");
+              // }
+
               print("\n");
+              continue;
             }
           }
 
           //Формирование списков
-          print("tomorrow = $indexTomorrow, future = $indexFuture");
-          for (int i = 0; i < undoneTasks.length; i++) {
-            if (i < indexTomorrow) {
-              print("\\\ today => [$i] ${undoneTasks[i].memo}");
-              undoneTasksToday.add(undoneTasks[i]);
-            }
-            if (i >= indexTomorrow && i < indexFuture) {
-              print("\\\ tomorrow =>[$i] ${undoneTasks[i].memo}");
-              undoneTasksTomorrow.add(undoneTasks[i]);
-            }
-
-            if (i >= indexFuture) {
-              print("\\\ future =>[$i] ${undoneTasks[i].memo}");
-              undoneTasksFuture.add(undoneTasks[i]);
-            }
-          }
+          // print("tomorrow = $indexTomorrow, future = $indexFuture");
+          // for (int i = 0; i < undoneTasks.length; i++) {
+          //   if (indexTomorrow == -1) {
+          //     print("\\\ today => [$i] ${undoneTasks[i].memo}");
+          //     undoneTasksToday.add(undoneTasks[i]);
+          //   }
+          //   if (i < indexTomorrow) {
+          //     print("\\\ today => [$i] ${undoneTasks[i].memo}");
+          //     undoneTasksToday.add(undoneTasks[i]);
+          //   }
+          //   if (i >= indexTomorrow && i < indexFuture) {
+          //     print("\\\ tomorrow =>[$i] ${undoneTasks[i].memo}");
+          //     undoneTasksTomorrow.add(undoneTasks[i]);
+          //   }
+          //
+          //   if (i >= indexFuture) {
+          //     print("\\\ future =>[$i] ${undoneTasks[i].memo}");
+          //     undoneTasksFuture.add(undoneTasks[i]);
+          //   }
+          // }
 
           //сортировка задач по цвету
           undoneTasksToday.sort((a, b) => a.color.compareTo(b.color));
@@ -357,7 +383,16 @@ class _TasksPageState extends State<TasksPage> {
             print("[$i]. ${finalUndoneTasks[i].memo}");
           }
 
+          print("---------------");
+          print("Last List");
+          for (int i = 0; i < finalUndoneTasks.length; i++) {
+            print("[$i]. ${finalUndoneTasks[i].memo}");
+          }
 
+          print("--------------");
+          print("indexFuture: $indexFuture");
+          print("indexTomorrow: $indexTomorrow");
+          print("--------------");
 
           switch (isSwitched) {
             case true:
@@ -382,8 +417,8 @@ class _TasksPageState extends State<TasksPage> {
                       child: TaskListTile(
                         context: context,
                         task: finalUndoneTasks[i],
-                        onTap: () =>
-                            EditTaskPage.show(context, task: finalUndoneTasks[i]),
+                        onTap: () => EditTaskPage.show(context,
+                            task: finalUndoneTasks[i]),
                       ),
                     );
                   },
